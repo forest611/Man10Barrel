@@ -247,8 +247,6 @@ object RemoteController : Listener{
 
                 val list = getStringLocationList(controller)
 
-//                Barrel.closeStorage(e.inventory, p)
-
                 if (Barrel.isOpened(Utility.jsonToLocation(list[page - 1]).block.location)){
                     sendMessage(p, "§c§l現在他のプレイヤーが開いています！")
                     return
@@ -265,8 +263,6 @@ object RemoteController : Listener{
                 val list = getStringLocationList(controller)
 
                 if (list.size==(page+1))return
-
-//                Barrel.closeStorage(e.inventory, p)
 
                 if (Barrel.isOpened(Utility.jsonToLocation(list[page + 1]).block.location)){
                     sendMessage(p, "§c§l現在他のプレイヤーが開いています！")

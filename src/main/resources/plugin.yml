@@ -1,0 +1,4 @@
+name: Man10Barrel
+version: @version@
+main: red.man10.man10barrel.Man10Barrel
+api-version: 1.16

@@ -1,11 +1,11 @@
 package red.man10.man10barrel.upgrade
 
+import io.papermc.paper.event.player.AsyncChatEvent
 import org.bukkit.Bukkit
 import org.bukkit.Material
 import org.bukkit.entity.Player
 import org.bukkit.event.EventHandler
 import org.bukkit.event.Listener
-import org.bukkit.event.player.AsyncPlayerChatEvent
 import org.bukkit.inventory.ItemStack
 import red.man10.man10barrel.Barrel
 import red.man10.man10barrel.Man10Barrel.Companion.plugin
@@ -45,7 +45,7 @@ class SearchUpgrade : Upgrade() ,Listener{
 
             if(!Barrel.isSpecialBarrel(barrelState))continue
 
-            val inv = Barrel.getStorage(barrelState)?:continue
+            val inv = Barrel.getStorage(barrelState)
 
             for (item in inv){
 
@@ -58,7 +58,7 @@ class SearchUpgrade : Upgrade() ,Listener{
 
                 val meta = item.itemMeta?:continue
 
-                if (meta.displayName.contains(keyword,true)){
+                if (meta.displayName().toString().contains(keyword,true)){
                     list.add(Utility.locationToJson(loc))
                     break
                 }
@@ -87,7 +87,7 @@ class SearchUpgrade : Upgrade() ,Listener{
     }
 
     @EventHandler
-    fun chatEvent(e:AsyncPlayerChatEvent){
+    fun chatEvent(e:AsyncChatEvent){
 
         val p = e.player
 
@@ -97,18 +97,17 @@ class SearchUpgrade : Upgrade() ,Listener{
 
         e.isCancelled = true
 
-        if (e.message == "cancel"){
+        val keyword = e.message().toString()
+
+        if (keyword == "cancel"){
             searchUser.remove(p)
             sendMessage(p,"検索をキャンセルしました")
             return
         }
 
-        val keyword = e.message
-
         Bukkit.getScheduler().runTask(plugin, Runnable {
             searchItems(p,item,keyword)
             searchUser.remove(p)
-
         })
 
     }

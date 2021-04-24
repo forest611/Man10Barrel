@@ -1,6 +1,7 @@
 package red.man10.man10barrel
 
 import com.google.gson.Gson
+import net.kyori.adventure.text.Component
 import org.bukkit.*
 import org.bukkit.entity.Player
 import org.bukkit.event.EventHandler
@@ -13,6 +14,7 @@ import org.bukkit.inventory.ItemFlag
 import org.bukkit.inventory.ItemStack
 import org.bukkit.persistence.PersistentDataType
 import red.man10.man10barrel.Man10Barrel.Companion.plugin
+import red.man10.man10barrel.Man10Barrel.Companion.title
 import red.man10.man10barrel.Man10Barrel.Companion.votingDiamond
 import red.man10.man10barrel.Utility.sendMessage
 import red.man10.man10barrel.upgrade.PasswordUpgrade
@@ -27,7 +29,6 @@ object RemoteController : Listener{
     private const val key = "Ver.1.0"
 
     private val checkingMap = HashMap<Player,String>()
-
     private val invMap = HashMap<Player, InvMap>()
 
     private val gson = Gson()
@@ -36,7 +37,6 @@ object RemoteController : Listener{
     val search = SearchUpgrade()
 
     class InvMap{
-        var locationList = mutableListOf<String>()
         var nowPage = 0
         lateinit var controller : ItemStack
     }
@@ -51,10 +51,14 @@ object RemoteController : Listener{
 
         val meta = controller.itemMeta
         meta.setCustomModelData(customModel)
-        meta.setDisplayName(controllerName)
+        meta.displayName(Component.text(controllerName))
         meta.isUnbreakable = true
 
-        meta.lore = mutableListOf("§f[1]ボタンで前のページ [2]ボタンで次のページ")
+        val list = mutableListOf<Component>()
+
+        list.add(Component.text("§f[1]ボタンで前のページ [2]ボタンで次のページ"))
+
+        meta.lore(list)
 
         meta.persistentDataContainer.set(NamespacedKey(plugin,"controller"), PersistentDataType.STRING, key)
 
@@ -116,7 +120,6 @@ object RemoteController : Listener{
 
         }
 
-
         setStringLocationList(controller,list)
 
         return ret
@@ -151,24 +154,46 @@ object RemoteController : Listener{
 
     }
 
+    private fun removeLocation(controller: ItemStack, page:Int){
+        val newList = getStringLocationList(controller).toMutableList()
+        newList.removeAt(page)
+        setStringLocationList(controller, newList)
+
+    }
+
     fun openInventory(controller:ItemStack,p:Player,page:Int,locList: List<String>){
 
         if (!isController(controller))return
 
-        if (locList.isNullOrEmpty())return
+        if (locList.isNullOrEmpty()){
+            sendMessage(p,"特殊樽を登録してください")
+            return
+        }
 
         val loc = Utility.jsonToLocation(locList[page])
 
         val block = loc.block
 
-        if (block.type != Material.BARREL)return
+        if (block.type != Material.BARREL){
+            removeLocation(controller,page)
+            openInventory(controller, p, page, locList)
+            return
+        }
 
         val barrelState = block.state
-        if (barrelState !is org.bukkit.block.Barrel)return
+        if (barrelState !is org.bukkit.block.Barrel){
+            removeLocation(controller,page)
+            openInventory(controller, p, page, locList)
+            return
+        }
 
-        if(!Barrel.isSpecialBarrel(barrelState))return
+        if(!Barrel.isSpecialBarrel(barrelState)){
+            removeLocation(controller,page)
+            openInventory(controller, p, page, locList)
+            return
+        }
 
-        if (Barrel.isOpen(loc)){
+        if (Barrel.isOpened(loc)){
             sendMessage(p, "§c§l現在他のプレイヤーが開いています！")
             return
         }
@@ -178,19 +203,16 @@ object RemoteController : Listener{
         val data = InvMap()
 
         data.controller = controller
-        data.locationList = locList.toMutableList()
         data.nowPage = page
 
         invMap[p] = data
 
     }
 
-
-
     @EventHandler
     fun changePageEvent(e:InventoryClickEvent){
 
-        if (e.view.title().toString() != Barrel.title)return
+        if (e.view.title != title)return
 
         val p = e.whoClicked as Player
 
@@ -223,17 +245,14 @@ object RemoteController : Listener{
             0 ->{//ページ戻る
                 if ((page-1)<0)return
 
-                val list = map.locationList
+                val list = getStringLocationList(controller)
 
-                val block = Utility.jsonToLocation(list[page]).block
-                Barrel.setStorageItem(e.inventory, block)
+//                Barrel.closeStorage(e.inventory, p)
 
-                if (Barrel.isOpen(Utility.jsonToLocation(list[page - 1]).block.location)){
+                if (Barrel.isOpened(Utility.jsonToLocation(list[page - 1]).block.location)){
                     sendMessage(p, "§c§l現在他のプレイヤーが開いています！")
                     return
                 }
-
-                Barrel.removeMap(block.location)
 
                 p.playSound(p.location, Sound.UI_BUTTON_CLICK,0.3F,1.0F)
 
@@ -243,19 +262,16 @@ object RemoteController : Listener{
 
             1 ->{//ページ進む
 
-                val list = map.locationList
+                val list = getStringLocationList(controller)
 
                 if (list.size==(page+1))return
 
-                val block = Utility.jsonToLocation(list[page]).block
-                Barrel.setStorageItem(e.inventory, block)
+//                Barrel.closeStorage(e.inventory, p)
 
-                if (Barrel.isOpen(Utility.jsonToLocation(list[page + 1]).block.location)){
+                if (Barrel.isOpened(Utility.jsonToLocation(list[page + 1]).block.location)){
                     sendMessage(p, "§c§l現在他のプレイヤーが開いています！")
                     return
                 }
-
-                Barrel.removeMap(block.location)
 
                 p.playSound(p.location, Sound.UI_BUTTON_CLICK,0.3F,1.0F)
 
@@ -316,18 +332,12 @@ object RemoteController : Listener{
     @EventHandler
     fun closeController(e:InventoryCloseEvent){
 
-        if (e.view.title().toString() != Barrel.title)return
+        if (e.view.title().toString() != title)return
 
-        val p = e.player
+        val p = e.player as Player
 
-        val map = invMap[p]?:return
+        Barrel.closeStorage(e.inventory,p)
 
-        val page = map.nowPage
-
-        val block = Utility.jsonToLocation(map.locationList[page]).block
-        Barrel.setStorageItem(e.inventory, block)
-
-        Barrel.removeMap(block.location)
         invMap.remove(p)
 
     }

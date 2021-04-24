@@ -1,5 +1,6 @@
 package red.man10.man10barrel
 
+import net.kyori.adventure.text.Component
 import org.bukkit.Bukkit
 import org.bukkit.Location
 import org.bukkit.Material
@@ -14,29 +15,51 @@ import org.bukkit.util.io.BukkitObjectInputStream
 import org.bukkit.util.io.BukkitObjectOutputStream
 import org.yaml.snakeyaml.external.biz.base64Coder.Base64Coder
 import red.man10.man10barrel.Man10Barrel.Companion.plugin
+import red.man10.man10barrel.Man10Barrel.Companion.title
+import red.man10.man10barrel.Utility.gson
 import red.man10.man10barrel.Utility.sendMessage
 import java.io.ByteArrayInputStream
 import java.io.ByteArrayOutputStream
 import java.io.IOException
+import java.util.*
 import kotlin.text.Charsets.UTF_8
 
 object Barrel {
 
-    const val title = "§e§l特殊樽"
     private const val maxByteSize = 65536
 
-    val opened = mutableListOf<Triple<Int,Int,Int>>()
+    private val blockMap = HashMap<Player,Block>()
+    private val isOpen = mutableListOf<Location>()
 
-    fun setStorageItem(inv:Inventory,block:Block){
+
+    fun openStorage(barrel:Barrel, p:Player){
+
+        val inv = getStorage(barrel)
+
+        p.openInventory(inv)
+
+        val loc = barrel.location
+        isOpen.add(loc)
+        blockMap[p] = barrel.block
+
+    }
+
+    fun closeStorage(inv:Inventory,p:Player){
+
+        setStorageItem(inv,p)
+
+        isOpen.remove(blockMap[p]!!.location)
+        blockMap.remove(p)
+
+    }
+
+    private fun setStorageItem(inv:Inventory, p:Player){
 
         val list = mutableListOf<ItemStack>()
 
         for (i in 0..53){
             val item = inv.getItem(i)?:continue
-//            if (item == null){
-//                //list.add(ItemStack(Material.AIR))
-//                continue
-//            }
+            if (item.type == Material.AIR){ continue }
             if (item.type == Material.WRITTEN_BOOK){
                 Bukkit.getLogger().warning("WRITTEN BOOK ERROR")
                 continue
@@ -44,7 +67,7 @@ object Barrel {
             list.add(item)
         }
 
-        val state = block.state
+        val state = blockMap[p]!!.state
         if (state !is Barrel)return
 
         val base64 = itemStackArrayToBase64(list.toTypedArray())
@@ -59,22 +82,11 @@ object Barrel {
         state.update()
     }
 
-    fun openStorage(barrel:Barrel, p:Player){
-
-        val inv = getStorage(barrel)
-
-        p.openInventory(inv?:Bukkit.createInventory(null,54, title))
-
-        val loc = barrel.location
-        opened.add(Triple(loc.blockX,loc.blockY,loc.blockZ))
-
-    }
-
-    fun getStorage(state:Barrel):Inventory?{
+    fun getStorage(state:Barrel):Inventory{
 
         if (!isSpecialBarrel(state))return state.inventory
 
-        val inv = Bukkit.createInventory(null,54, title)
+        val inv = Bukkit.createInventory(null,54, Component.text(title))
 
         val storage = state.persistentDataContainer[NamespacedKey(plugin,"storage"), PersistentDataType.STRING]?:return inv
 
@@ -93,20 +105,6 @@ object Barrel {
         return true
     }
 
-//    fun isSpecialBarrel(block:Block):Boolean{
-//
-//
-//        if (block.type != Material.BARREL)return false
-//
-//        val barrelState = block.state
-//        if (barrelState !is Barrel)return false
-//
-//        if(!isSpecialBarrel(barrelState))return false
-//
-//        if ((barrelState.customName?:return false) != title)return false
-//        return true
-//    }
-//
     fun hasItem(barrel: Barrel):Boolean{
         val storage = barrel.persistentDataContainer[NamespacedKey(plugin,"storage"), PersistentDataType.STRING]?:return false
 
@@ -117,18 +115,10 @@ object Barrel {
         return true
 
     }
-//
-//    fun dropStorage(barrel: Barrel){
-//        val storage = barrel.persistentDataContainer[NamespacedKey(plugin,"storage"), PersistentDataType.STRING]?:return
-//
-//        val items = itemStackArrayFromBase64(storage)
-//
-//        items.forEach { if (it.type != Material.AIR) {barrel.world.dropItem(barrel.location, it) }}
-//    }
 
     fun hasPermission(p:Player,barrel: Barrel):Boolean{
 
-        val owners = barrel.persistentDataContainer[NamespacedKey(plugin,"owners"), PersistentDataType.STRING]?.split(";")?:return false
+        val owners = getPermissions(barrel)?:return false
 
         if (owners.contains(p.uniqueId.toString()))return true
 
@@ -136,29 +126,41 @@ object Barrel {
 
     }
 
-    fun removePermission(p:Player,barrel: Barrel){
-        val owners = barrel.persistentDataContainer[NamespacedKey(plugin,"owners"), PersistentDataType.STRING]?:""
-        owners.replace("${p.uniqueId};","")
+    private fun removePermission(p:Player, barrel: Barrel){
+        val perms = getPermissions(barrel)?:return
 
-        barrel.persistentDataContainer.set(NamespacedKey(plugin,"owners"), PersistentDataType.STRING,owners)
+        perms.remove(p.uniqueId.toString())
+
+        barrel.persistentDataContainer.set(NamespacedKey(plugin,"owners"), PersistentDataType.STRING, gson.toJson(perms))
 
         barrel.update()
     }
 
     fun addPermission(p:Player,barrel: Barrel){
 
-        var owners = barrel.persistentDataContainer[NamespacedKey(plugin,"owners"), PersistentDataType.STRING]?:""
-        owners += "${p.uniqueId};"
+        val perms = getPermissions(barrel)?:return
 
-        barrel.persistentDataContainer.set(NamespacedKey(plugin,"owners"), PersistentDataType.STRING,owners)
+        perms.add(p.uniqueId.toString())
+
+        barrel.persistentDataContainer.set(NamespacedKey(plugin,"owners"), PersistentDataType.STRING, gson.toJson(perms))
 
         barrel.update()
 
     }
 
+    private fun getPermissions(barrel: Barrel): MutableList<String>? {
+
+        if (!isSpecialBarrel(barrel)) return null
+
+        val str = barrel.persistentDataContainer[NamespacedKey(plugin, "owners"), PersistentDataType.STRING] ?: return mutableListOf()
+
+        return gson.fromJson(str, Array<String>::class.java).toMutableList()
+    }
+
     fun addPermission(owner:Player,barrel:Barrel,paper: ItemStack){
 
-        val names = paper.itemMeta.displayName.replace("§o","").split(";")
+        val names = paper.itemMeta.displayName().toString().replace("§o","").split(";")
+
         for (name in names){
 
             val p = Bukkit.getPlayer(name)?:continue
@@ -182,12 +184,8 @@ object Barrel {
 
     }
 
-    fun isOpen(loc:Location):Boolean{
-        return opened.contains(Triple(loc.blockX,loc.blockY,loc.blockZ))
-    }
-
-    fun removeMap(loc: Location){
-        opened.remove(Triple(loc.blockX,loc.blockY,loc.blockZ))
+    fun isOpened(loc:Location):Boolean{
+        return isOpen.contains(loc)
     }
 
 

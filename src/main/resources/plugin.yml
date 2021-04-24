@@ -1,4 +1,9 @@
 name: Man10Barrel
-version: @version@
+version: 1.0
+softdepend:
+  - Man10CommonLibs
 main: red.man10.man10barrel.Man10Barrel
 api-version: 1.16
+commands:
+  barrel:
+    default: op

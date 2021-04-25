@@ -7,6 +7,7 @@ import org.bukkit.command.CommandSender
 import org.bukkit.entity.Player
 import org.bukkit.inventory.ItemStack
 import org.bukkit.plugin.java.JavaPlugin
+import red.man10.man10barrel.upgrade.Upgrade
 
 class Man10Barrel : JavaPlugin() {
 
@@ -65,7 +66,6 @@ class Man10Barrel : JavaPlugin() {
             "upgrade" ->{
                 if (sender !is Player)return false
 
-                sender.inventory.addItem(RemoteController.password.getUpgrade())
                 sender.inventory.addItem(RemoteController.search.getUpgrade())
             }
 
@@ -75,6 +75,18 @@ class Man10Barrel : JavaPlugin() {
                 votingDiamond = sender.inventory.itemInMainHand
                 config.set("votingDiamond",sender.inventory.itemInMainHand)
                 saveConfig()
+            }
+
+            "status" ->{
+                if (sender !is Player)return false
+
+                val item = sender.inventory.itemInMainHand
+
+                if (!RemoteController.isController(item))return true
+
+                Utility.sendMessage(sender, "pages:${RemoteController.getStringLocationList(item).size}")
+                Utility.sendMessage(sender, "upgrades:${Upgrade.getAllUpgrades(item)}")
+
             }
 
         }

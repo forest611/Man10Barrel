@@ -1,5 +1,6 @@
 package red.man10.man10barrel.upgrade
 
+import net.kyori.adventure.text.Component
 import org.bukkit.Bukkit
 import org.bukkit.Material
 import org.bukkit.NamespacedKey
@@ -44,7 +45,7 @@ class PasswordUpgrade : Upgrade() ,Listener{
         for (i in 0..9){
             val item = ItemStack(Material.IRON_NUGGET)
             val meta = item.itemMeta
-            meta.setDisplayName(i.toString())
+            meta.displayName(Component.text(i))
             meta.setCustomModelData((cmd - i))
             item.itemMeta = meta
             numbers[i] = Pair(slots[i],item)
@@ -62,7 +63,7 @@ class PasswordUpgrade : Upgrade() ,Listener{
 
         if (data.numbers.length>=data.maxDigit) return
 
-        val inv = Bukkit.createInventory(null,54,data.title)
+        val inv = Bukkit.createInventory(null,54, Component.text(data.title))
 
         for (i in 0..9){
             inv.setItem(numbers[i]!!.first,numbers[i]!!.second)

@@ -23,7 +23,7 @@ import red.man10.man10barrel.upgrade.Upgrade
 
 object RemoteController : Listener{
 
-    private const val controllerName = "§b特殊樽アクセス端末"
+    private const val controllerName = "§bRemoteController"
     private const val customModel = 370
 
     private const val key = "Ver.1.0"
@@ -33,8 +33,11 @@ object RemoteController : Listener{
 
     private val gson = Gson()
 
-    val password = PasswordUpgrade()
+    private val password = PasswordUpgrade()
     val search = SearchUpgrade()
+
+    private const val keyController = "controller"
+    private const val keyLocation = "location"
 
     class InvMap{
         var nowPage = 0
@@ -56,13 +59,16 @@ object RemoteController : Listener{
 
         val list = mutableListOf<Component>()
 
-        list.add(Component.text("§f[1]ボタンで前のページ [2]ボタンで次のページ"))
+        list.add(Component.text("§f[1]ボタンで前のページ"))
+        list.add(Component.text("§f[2]ボタンで次のページ"))
 
         meta.lore(list)
 
-        meta.persistentDataContainer.set(NamespacedKey(plugin,"controller"), PersistentDataType.STRING, key)
+        meta.persistentDataContainer.set(NamespacedKey(plugin, keyController), PersistentDataType.STRING, key)
 
         controller.itemMeta = meta
+
+        Upgrade.addUpgrade(password.getUpgrade(),controller)
 
         return controller
 
@@ -71,7 +77,7 @@ object RemoteController : Listener{
     fun isController(item:ItemStack):Boolean{
 
         if (item.hasItemMeta()){
-            val key = item.itemMeta.persistentDataContainer[NamespacedKey(plugin, "controller"), PersistentDataType.STRING]
+            val key = item.itemMeta.persistentDataContainer[NamespacedKey(plugin, keyController), PersistentDataType.STRING]
 
             if (key == RemoteController.key)return true
         }
@@ -139,7 +145,7 @@ object RemoteController : Listener{
 
         if (!isController(controller))return emptyList()
 
-        val str = controller.itemMeta!!.persistentDataContainer[NamespacedKey(plugin,"location"), PersistentDataType.STRING]?:return emptyList()
+        val str = controller.itemMeta!!.persistentDataContainer[NamespacedKey(plugin, keyLocation), PersistentDataType.STRING]?:return emptyList()
 
         return gson.fromJson(str, Array<String>::class.java).toList()
     }
@@ -149,7 +155,7 @@ object RemoteController : Listener{
         if (!isController(controller))return
 
         val meta = controller.itemMeta
-        meta.persistentDataContainer.set(NamespacedKey(plugin,"location"), PersistentDataType.STRING, gson.toJson(locList))
+        meta.persistentDataContainer.set(NamespacedKey(plugin, keyLocation), PersistentDataType.STRING, gson.toJson(locList))
         controller.itemMeta = meta
 
     }
@@ -282,6 +288,7 @@ object RemoteController : Listener{
 
             3 ->{
 
+                //パスワードをデフォルトで実装する
                 if (Upgrade.getAllUpgrades(controller).contains("password")){
                     password.openPasswordSetting(p,controller)
                     return
@@ -296,10 +303,6 @@ object RemoteController : Listener{
                 }
             }
 
-            8 ->{//デバッグメニュー
-                sendMessage(p, "pages:${getStringLocationList(controller).size}")
-                sendMessage(p,"upgrades:${Upgrade.getAllUpgrades(controller)}")
-            }
         }
 
     }

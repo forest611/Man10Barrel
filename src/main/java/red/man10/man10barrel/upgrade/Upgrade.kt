@@ -1,6 +1,7 @@
 package red.man10.man10barrel.upgrade
 
 import com.google.gson.Gson
+import net.kyori.adventure.text.Component
 import org.bukkit.Material
 import org.bukkit.NamespacedKey
 import org.bukkit.enchantments.Enchantment
@@ -13,12 +14,13 @@ abstract class Upgrade {
 
     abstract val upgradeName : String
 
+
     fun getUpgrade(displayName:String,lore:MutableList<String>):ItemStack{
 
         val item = ItemStack(Material.PAPER)
         val meta = item.itemMeta
-        meta.persistentDataContainer.set(NamespacedKey(plugin,"name"), PersistentDataType.STRING,upgradeName)
-        meta.setDisplayName(displayName)
+        meta.persistentDataContainer.set(NamespacedKey(plugin,keyName), PersistentDataType.STRING,upgradeName)
+        meta.displayName(Component.text(displayName))
         meta.addItemFlags(ItemFlag.HIDE_ENCHANTS)
         meta.addEnchant(Enchantment.LUCK,1,false)
 
@@ -31,13 +33,17 @@ abstract class Upgrade {
 
     companion object{
 
+
+        private const val keyName = "name"
+        private const val keyUpgrades = "upgrades"
+
         fun itemToUpgradeName(itemStack: ItemStack): String? {
-            return itemStack.itemMeta.persistentDataContainer[NamespacedKey(plugin,"name"), PersistentDataType.STRING]
+            return itemStack.itemMeta.persistentDataContainer[NamespacedKey(plugin, keyName), PersistentDataType.STRING]
         }
 
         fun getAllUpgrades(controller:ItemStack):List<String>{
 
-            val jsonStr = controller.itemMeta!!.persistentDataContainer[NamespacedKey(plugin,"upgrades"), PersistentDataType.STRING]?:return emptyList()
+            val jsonStr = controller.itemMeta!!.persistentDataContainer[NamespacedKey(plugin, keyUpgrades), PersistentDataType.STRING]?:return emptyList()
 
             return Gson().fromJson(jsonStr,Array<String>::class.java).toList()
         }
@@ -54,7 +60,7 @@ abstract class Upgrade {
 
             val meta = controller.itemMeta!!
 
-            meta.persistentDataContainer.set(NamespacedKey(plugin,"upgrades"), PersistentDataType.STRING, Gson().toJson(upgrades))
+            meta.persistentDataContainer.set(NamespacedKey(plugin, keyUpgrades), PersistentDataType.STRING, Gson().toJson(upgrades))
 
             controller.itemMeta = meta
 

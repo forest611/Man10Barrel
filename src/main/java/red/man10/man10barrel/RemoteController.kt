@@ -187,15 +187,16 @@ object RemoteController : Listener{
         }
 
         val barrelState = block.state
+
         if (barrelState !is org.bukkit.block.Barrel){
             removeLocation(controller,page)
-            openInventory(controller, p, page, locList)
+            openInventory(controller, p, page-1, locList)
             return
         }
 
         if(!Barrel.isSpecialBarrel(barrelState)){
             removeLocation(controller,page)
-            openInventory(controller, p, page, locList)
+            openInventory(controller, p, page-1, locList)
             return
         }
 

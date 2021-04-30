@@ -168,9 +168,11 @@ object RemoteController : Listener{
 
     }
 
-    fun openInventory(controller:ItemStack,p:Player,page:Int,locList: List<String>){
+    fun openInventory(controller:ItemStack,p:Player,page:Int){
 
         if (!isController(controller))return
+
+        val locList = getStringLocationList(controller)
 
         if (locList.isNullOrEmpty()){
             sendMessage(p,"特殊樽を登録してください")
@@ -184,7 +186,7 @@ object RemoteController : Listener{
         if (block.type != Material.BARREL){
             sendMessage(p, "§cなくなった${title}§cがありました")
             removeLocation(controller,page)
-            openInventory(controller, p, 0, locList)
+            openInventory(controller, p, 0)
             return
         }
 
@@ -194,7 +196,7 @@ object RemoteController : Listener{
             sendMessage(p, "§cなくなった${title}がありました")
 
             removeLocation(controller,page)
-            openInventory(controller, p, 0, locList)
+            openInventory(controller, p, 0)
             return
         }
 
@@ -250,16 +252,18 @@ object RemoteController : Listener{
             0 ->{//ページ戻る
                 if ((page-1)<0)return
 
+                val newPage = page - 1
+
                 val list = getStringLocationList(controller)
 
-                if (Barrel.isOpened(Utility.jsonToLocation(list[page - 1]).block.location)){
+                if (Barrel.isOpened(Utility.jsonToLocation(list[newPage]).block.location)){
                     sendMessage(p, "§c§l現在他のプレイヤーが開いています！")
                     return
                 }
 
                 p.playSound(p.location, Sound.UI_BUTTON_CLICK,0.3F,1.0F)
 
-                openInventory(controller,p, (page-1),list)
+                openInventory(controller,p, newPage)
 
             }
 
@@ -267,16 +271,18 @@ object RemoteController : Listener{
 
                 val list = getStringLocationList(controller)
 
-                if (list.size==(page+1))return
+                val newPage = page + 1
 
-                if (Barrel.isOpened(Utility.jsonToLocation(list[page + 1]).block.location)){
+                if (list.size>=(newPage))return
+
+                if (Barrel.isOpened(Utility.jsonToLocation(list[newPage]).block.location)){
                     sendMessage(p, "§c§l現在他のプレイヤーが開いています！")
                     return
                 }
 
                 p.playSound(p.location, Sound.UI_BUTTON_CLICK,0.3F,1.0F)
 
-                openInventory(controller,p, (page+1),list)
+                openInventory(controller,p, (newPage))
 
             }
 
@@ -323,7 +329,7 @@ object RemoteController : Listener{
             return
         }
 
-        openInventory(item,p,0, getStringLocationList(item))
+        openInventory(item,p,0)
 
     }
 

@@ -181,22 +181,19 @@ object RemoteController : Listener{
         val block = loc.block
 
         if (block.type != Material.BARREL){
+            sendMessage(p, "§cなくなった${title}§cがありました")
             removeLocation(controller,page)
-            openInventory(controller, p, page, locList)
+            openInventory(controller, p, 0, locList)
             return
         }
 
         val barrelState = block.state
 
-        if (barrelState !is org.bukkit.block.Barrel){
-            removeLocation(controller,page)
-            openInventory(controller, p, page-1, locList)
-            return
-        }
+        if(barrelState !is org.bukkit.block.Barrel || !Barrel.isSpecialBarrel(barrelState)){
+            sendMessage(p, "§cなくなった${title}がありました")
 
-        if(!Barrel.isSpecialBarrel(barrelState)){
             removeLocation(controller,page)
-            openInventory(controller, p, page-1, locList)
+            openInventory(controller, p, 0, locList)
             return
         }
 

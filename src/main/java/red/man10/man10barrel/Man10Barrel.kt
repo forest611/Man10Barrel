@@ -24,6 +24,8 @@ class Man10Barrel : JavaPlugin() {
         plugin = this
 
         server.pluginManager.registerEvents(BarrelEvent,this)
+        server.pluginManager.registerEvents(RemoteController.search,this)
+        server.pluginManager.registerEvents(RemoteController.password,this)
         server.pluginManager.registerEvents(RemoteController,this)
 
         votingDiamond = config.getItemStack("votingDiamond")?: ItemStack(Material.DIAMOND)

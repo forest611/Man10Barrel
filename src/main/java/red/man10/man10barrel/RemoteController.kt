@@ -9,6 +9,7 @@ import org.bukkit.event.Listener
 import org.bukkit.event.block.Action
 import org.bukkit.event.inventory.InventoryClickEvent
 import org.bukkit.event.inventory.InventoryCloseEvent
+import org.bukkit.event.player.PlayerDropItemEvent
 import org.bukkit.event.player.PlayerInteractEvent
 import org.bukkit.inventory.ItemFlag
 import org.bukkit.inventory.ItemStack
@@ -33,7 +34,7 @@ object RemoteController : Listener{
 
     private val gson = Gson()
 
-    private val password = PasswordUpgrade()
+    val password = PasswordUpgrade()
     val search = SearchUpgrade()
 
     private const val keyController = "controller"
@@ -336,6 +337,15 @@ object RemoteController : Listener{
         Barrel.closeStorage(e.inventory,p)
 
         invMap.remove(p)
+
+    }
+
+    @EventHandler
+    fun dropEvent(e:PlayerDropItemEvent){
+
+        val item = e.itemDrop.itemStack
+
+        if (isController(item))return
 
     }
 

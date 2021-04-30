@@ -345,7 +345,10 @@ object RemoteController : Listener{
 
         val item = e.itemDrop.itemStack
 
-        if (isController(item))return
+        if (isController(item)){
+            e.isCancelled = true
+            return
+        }
 
     }
 

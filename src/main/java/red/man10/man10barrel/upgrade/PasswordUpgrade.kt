@@ -174,7 +174,7 @@ class PasswordUpgrade : Upgrade() ,Listener{
                         return
                     }
 
-                    RemoteController.openInventory(data.controller,p,0, RemoteController.getStringLocationList(data.controller))
+                    RemoteController.openInventory(data.controller,p,0)
                     numericPadMap.remove(p)
                     return
 

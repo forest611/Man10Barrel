@@ -75,7 +75,7 @@ class SearchUpgrade : Upgrade() ,Listener{
             return
         }
 
-        RemoteController.openInventory(controller,p,0,list)
+        RemoteController.openInventory(controller,p,0)
 
     }
 

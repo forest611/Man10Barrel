@@ -250,9 +250,10 @@ object RemoteController : Listener{
 
         when(e.hotbarButton){
             0 ->{//ページ戻る
-                if ((page-1)<0)return
 
                 val newPage = page - 1
+
+                if (newPage<0)return
 
                 val list = getStringLocationList(controller)
 
@@ -273,7 +274,7 @@ object RemoteController : Listener{
 
                 val newPage = page + 1
 
-                if (list.size>=(newPage))return
+                if (list.size<=(newPage))return
 
                 if (Barrel.isOpened(Utility.jsonToLocation(list[newPage]).block.location)){
                     sendMessage(p, "§c§l現在他のプレイヤーが開いています！")
@@ -282,7 +283,7 @@ object RemoteController : Listener{
 
                 p.playSound(p.location, Sound.UI_BUTTON_CLICK,0.3F,1.0F)
 
-                openInventory(controller,p, (newPage))
+                openInventory(controller,p, newPage)
 
             }
 

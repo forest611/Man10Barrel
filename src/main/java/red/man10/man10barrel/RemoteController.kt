@@ -27,7 +27,7 @@ object RemoteController : Listener{
     private const val controllerName = "§bRemoteController"
     private const val customModel = 370
 
-    private const val key = "Ver.1.0"
+    private const val version = "Ver.1.0"
 
     private val checkingMap = HashMap<Player,String>()
     private val invMap = HashMap<Player, InvMap>()
@@ -65,7 +65,7 @@ object RemoteController : Listener{
 
         meta.lore(list)
 
-        meta.persistentDataContainer.set(NamespacedKey(plugin, keyController), PersistentDataType.STRING, key)
+        meta.persistentDataContainer.set(NamespacedKey(plugin, keyController), PersistentDataType.STRING, version)
 
         controller.itemMeta = meta
 
@@ -80,7 +80,7 @@ object RemoteController : Listener{
         if (item.hasItemMeta()){
             val key = item.itemMeta.persistentDataContainer[NamespacedKey(plugin, keyController), PersistentDataType.STRING]
 
-            if (key == RemoteController.key)return true
+            if (key == version)return true
         }
         return false
     }

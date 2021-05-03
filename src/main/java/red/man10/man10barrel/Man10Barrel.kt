@@ -88,6 +88,7 @@ class Man10Barrel : JavaPlugin() {
 
                 Utility.sendMessage(sender, "pages:${RemoteController.getStringLocationList(item).size}")
                 Utility.sendMessage(sender, "upgrades:${Upgrade.getAllUpgrades(item)}")
+                Utility.sendMessage(sender,"password:${RemoteController.password.getPassword(item)}")
 
             }
 

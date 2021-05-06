@@ -18,9 +18,12 @@ import red.man10.man10barrel.Man10Barrel.Companion.plugin
 import red.man10.man10barrel.Man10Barrel.Companion.title
 import red.man10.man10barrel.Utility.gson
 import red.man10.man10barrel.Utility.sendMessage
+import red.man10.realestate.RealEstateAPI
+import red.man10.realestate.region.User
 import java.io.ByteArrayInputStream
 import java.io.ByteArrayOutputStream
 import java.io.IOException
+import java.io.Reader
 import java.util.*
 import kotlin.text.Charsets.UTF_8
 
@@ -118,6 +121,8 @@ object Barrel {
 
     fun hasPermission(p:Player,barrel: Barrel):Boolean{
 
+        if (RealEstateAPI.hasPermission(p,barrel.location,User.Permission.ALL))return true
+
         val owners = getPermissions(barrel)?:return false
 
         if (owners.contains(p.uniqueId.toString()))return true
@@ -188,6 +193,18 @@ object Barrel {
         return isOpen.contains(loc)
     }
 
+    fun updateNewBarrel(barrel: Barrel,p: Player){
+
+        blockMap[p] = barrel.block
+
+        setStorageItem(RealEstateAPI.getSpecialBarrel(barrel)?:return,p)
+
+        barrel.customName = title
+
+        addPermission(p,barrel)
+
+        sendMessage(p,"アップデートが完了しました")
+    }
 
     ////////////////////////////////////////
     //base64 stack

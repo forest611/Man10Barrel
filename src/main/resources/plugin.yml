@@ -2,6 +2,7 @@ name: Man10Barrel
 version: 1.0
 softdepend:
   - Man10CommonLibs
+  - Man10RealEstate
 main: red.man10.man10barrel.Man10Barrel
 api-version: 1.16
 commands:

@@ -194,13 +194,13 @@ object Barrel {
 
     fun update(p:Player,barrel: Barrel){
 
+        p.closeInventory()
+
         for (key in barrel.persistentDataContainer.keys){
 
             if (key.key != "storage")continue
 
             val oldData = barrel.persistentDataContainer[key, PersistentDataType.STRING]?:break
-
-            p.closeInventory()
 
             barrel.persistentDataContainer.set(NamespacedKey(plugin,"storage"), PersistentDataType.STRING, oldData)
 

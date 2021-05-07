@@ -193,6 +193,30 @@ object Barrel {
         return isOpen.contains(loc)
     }
 
+    fun update(p:Player,barrel: Barrel){
+
+        for (key in barrel.persistentDataContainer.keys){
+
+            Bukkit.getLogger().info("${key.key},${key.namespace}")
+
+            if (key.key != "storage")continue
+
+            barrel.persistentDataContainer.set(NamespacedKey(plugin,"storage"), PersistentDataType.STRING,
+                barrel.persistentDataContainer[key, PersistentDataType.STRING]?:break
+            )
+
+            p.closeInventory()
+
+            addPermission(p,barrel)
+
+            barrel.customName = title
+
+            barrel.update()
+
+            sendMessage(p,"UPDATE")
+        }
+
+    }
     ////////////////////////////////////////
     //base64 stack
     /////////////////////////////////////////

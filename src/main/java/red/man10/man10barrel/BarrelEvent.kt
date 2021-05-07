@@ -18,6 +18,7 @@ import red.man10.man10barrel.Barrel.hasPermission
 import red.man10.man10barrel.Barrel.isOpened
 import red.man10.man10barrel.Barrel.isSpecialBarrel
 import red.man10.man10barrel.Barrel.openStorage
+import red.man10.man10barrel.Barrel.update
 import red.man10.man10barrel.Man10Barrel.Companion.title
 import red.man10.man10barrel.Utility.sendMessage
 
@@ -49,8 +50,12 @@ object BarrelEvent:Listener {
         val barrelState = block.state
         if (barrelState !is Barrel)return
 
-
         val p = e.player
+
+        if (barrelState.customName == "§e§l特殊樽"){
+            update(p,barrelState)
+            return
+        }
 
         if (e.isCancelled)return
 

@@ -201,15 +201,17 @@ object Barrel {
 
             if (key.key != "storage")continue
 
-            barrel.persistentDataContainer.set(NamespacedKey(plugin,"storage"), PersistentDataType.STRING,
-                barrel.persistentDataContainer[key, PersistentDataType.STRING]?:break
-            )
+            val oldData = barrel.persistentDataContainer[key, PersistentDataType.STRING]?:break
 
             p.closeInventory()
+
+            barrel.persistentDataContainer.set(NamespacedKey(plugin,"storage"), PersistentDataType.STRING, oldData)
 
             addPermission(p,barrel)
 
             barrel.customName = title
+
+            p.closeInventory()
 
             barrel.update()
 

@@ -92,7 +92,14 @@ object Barrel {
 
         val storage = state.persistentDataContainer[NamespacedKey(plugin,"storage"), PersistentDataType.STRING]?:return inv
 
-        val items = itemStackArrayFromBase64(storage)
+        var items = mutableListOf<ItemStack>()
+
+        try {
+            items = itemStackArrayFromBase64(storage)
+        }catch (e:java.lang.Exception){
+            Bukkit.getLogger().info(e.message)
+            return inv
+        }
 
         for (item in items){
             inv.addItem(item)

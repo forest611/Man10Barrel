@@ -1,6 +1,5 @@
 package red.man10.man10barrel
 
-import org.bukkit.Bukkit
 import org.bukkit.Material
 import org.bukkit.block.Barrel
 import org.bukkit.entity.Player
@@ -19,7 +18,6 @@ import red.man10.man10barrel.Barrel.hasPermission
 import red.man10.man10barrel.Barrel.isOpened
 import red.man10.man10barrel.Barrel.isSpecialBarrel
 import red.man10.man10barrel.Barrel.openStorage
-import red.man10.man10barrel.Barrel.updateNewBarrel
 import red.man10.man10barrel.Man10Barrel.Companion.title
 import red.man10.man10barrel.Utility.sendMessage
 
@@ -53,13 +51,6 @@ object BarrelEvent:Listener {
 
 
         val p = e.player
-
-        if (barrelState.customName == "§e§l特殊樽"){
-
-            updateNewBarrel(barrelState,p)
-
-            return
-        }
 
         if (e.isCancelled)return
 

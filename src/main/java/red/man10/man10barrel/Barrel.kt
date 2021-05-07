@@ -193,19 +193,6 @@ object Barrel {
         return isOpen.contains(loc)
     }
 
-    fun updateNewBarrel(barrel: Barrel,p: Player){
-
-        blockMap[p] = barrel.block
-
-        setStorageItem(RealEstateAPI.getSpecialBarrel(barrel)?:return,p)
-
-        barrel.customName = title
-
-        addPermission(p,barrel)
-
-        sendMessage(p,"アップデートが完了しました")
-    }
-
     ////////////////////////////////////////
     //base64 stack
     /////////////////////////////////////////

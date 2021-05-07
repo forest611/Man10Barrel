@@ -96,7 +96,7 @@ object Barrel {
 
         try {
             items = itemStackArrayFromBase64(storage)
-        }catch (e:java.lang.Exception){
+        }catch (e:Exception){
             Bukkit.getLogger().info(e.message)
             return inv
         }
@@ -205,9 +205,14 @@ object Barrel {
 
         for (key in barrel.persistentDataContainer.keys){
 
-            if (key.key != "storage")continue
+            if (key.key != "storage"){ continue }
 
             val oldData = barrel.persistentDataContainer[key, PersistentDataType.STRING]?:break
+
+            barrel.persistentDataContainer.keys.forEach{
+                barrel.persistentDataContainer.remove(it)
+                barrel.update()
+            }
 
             barrel.persistentDataContainer.set(NamespacedKey(plugin,"storage"), PersistentDataType.STRING, oldData)
 
@@ -220,6 +225,7 @@ object Barrel {
             barrel.update()
 
             sendMessage(p,"UPDATE")
+            break
         }
 
     }

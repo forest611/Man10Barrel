@@ -170,7 +170,7 @@ object Barrel {
 
     fun addPermission(owner:Player,barrel:Barrel,paper: ItemStack){
 
-        val names = paper.itemMeta.displayName().toString().replace("§o","").split(";")
+        val names = paper.itemMeta.displayName.replace("§o","").split(";")
 
         for (name in names){
 

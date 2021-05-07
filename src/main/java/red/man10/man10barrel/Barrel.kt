@@ -23,7 +23,6 @@ import red.man10.realestate.region.User
 import java.io.ByteArrayInputStream
 import java.io.ByteArrayOutputStream
 import java.io.IOException
-import java.io.Reader
 import java.util.*
 import kotlin.text.Charsets.UTF_8
 
@@ -196,8 +195,6 @@ object Barrel {
     fun update(p:Player,barrel: Barrel){
 
         for (key in barrel.persistentDataContainer.keys){
-
-            Bukkit.getLogger().info("${key.key},${key.namespace}")
 
             if (key.key != "storage")continue
 
